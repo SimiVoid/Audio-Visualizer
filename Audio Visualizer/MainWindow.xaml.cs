@@ -19,7 +19,7 @@ namespace Audio_Visualizer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly int _bufferSize = (int)Math.Pow(2, 11);
+        private const int BufferSize = 2048;
         private const int Rate = 44100;
 
         private WaveIn _waveIn;
@@ -27,7 +27,6 @@ namespace Audio_Visualizer
         private BufferedWaveProvider _bufferedWaveProvider;
 
         private TypeOfView _typeOfView;
-        private TypeOfInput _typeOfInput;
 
         private double[] _data;
         private bool _isRun;
@@ -54,7 +53,7 @@ namespace Audio_Visualizer
         {
             _isRun = true;
 
-            Height = SystemParameters.PrimaryScreenHeight * 96.0 / (int)Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96); ;
+            Height = SystemParameters.PrimaryScreenHeight * 96.0 / (int)Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
             Width = SystemParameters.PrimaryScreenWidth * 96.0 / (int)Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
 
             Visualizer.Height = Height;
@@ -63,24 +62,73 @@ namespace Audio_Visualizer
             _wasapiLoopbackCapture = new WasapiLoopbackCapture();
             _wasapiLoopbackCapture.DataAvailable += _wasapiLoopbackCapture_DataAvailable;
 
-            _waveIn = new WaveIn();
+            _waveIn = new WaveIn
+            {
+                WaveFormat = _wasapiLoopbackCapture.WaveFormat,
+                BufferMilliseconds = (int) (BufferSize / (double) Rate * 1000.0)
+            };
             _waveIn.DataAvailable += _waveIn_DataAvailable;
-            _waveIn.WaveFormat = _wasapiLoopbackCapture.WaveFormat;
-            _waveIn.BufferMilliseconds = (int)((double)_bufferSize / (double)Rate * 1000.0);
 
             _bufferedWaveProvider = new BufferedWaveProvider(_wasapiLoopbackCapture.WaveFormat)
             {
-                BufferLength = _bufferSize * 2,
+                BufferLength = BufferSize * 2,
                 DiscardOnBufferOverflow = true
             };
 
             _typeOfView = TypeOfView.None;
-            _typeOfInput = TypeOfInput.None;
 
             _updateThread = new Thread(Update);
             _updateThread.TrySetApartmentState(ApartmentState.STA);
             _updateThread.Start();
         }
+
+        /// <summary>
+        ///     Update view of data
+        /// </summary>
+        private void Update()
+        {
+            while (_isRun)
+            {
+                PlotAudioData();
+
+                switch (_typeOfView)
+                {
+                    case TypeOfView.None:
+                        break;
+                    case TypeOfView.Wave:
+                        DrawWave();
+                        break;
+                    case TypeOfView.Classic:
+                        DrawSpectrum();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                if (_data != null)
+                    for (var i = 0; i < _data.Length; i++)
+                    {
+                        _data[i] *= 0.9;
+                    }
+
+                Thread.Sleep(20);
+            }
+        }
+
+        /// <summary>
+        ///     Close application event
+        /// </summary>
+        /// <param name="sender">Window object</param>
+        /// <param name="e">Event arguments</param>
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            _isRun = false;
+
+            _wasapiLoopbackCapture?.StopRecording();
+            _waveIn?.StopRecording();
+        }
+
+        #endregion
 
         #region Audio
 
@@ -107,10 +155,10 @@ namespace Audio_Visualizer
         /// <summary>
         /// Get audio from stream
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">Audio stream data</param>
         private void GetAudio(WaveInEventArgs e)
         {
-            _bufferedWaveProvider.AddSamples(e.Buffer, 0, e.BytesRecorded); 
+            _bufferedWaveProvider.AddSamples(e.Buffer, 0, e.BytesRecorded);
         }
 
         /// <summary>
@@ -118,7 +166,7 @@ namespace Audio_Visualizer
         /// </summary>
         private void PlotAudioData()
         {
-            var frameSize = _bufferSize;
+            var frameSize = BufferSize;
             var audioBytes = new byte[frameSize];
 
             _bufferedWaveProvider.Read(audioBytes, 0, frameSize);
@@ -128,26 +176,18 @@ namespace Audio_Visualizer
             const int bytesPerPoint = 2;
             var graphPointCount = audioBytes.Length / bytesPerPoint;
             var pcm = new double[graphPointCount];
-            var fft = new double[graphPointCount];
             var fftReal = new double[graphPointCount / 2];
 
             for (var i = 0; i < graphPointCount; i++)
             {
                 var val = BitConverter.ToInt16(audioBytes, i * 2);
 
-                pcm[i] = (double) val / Math.Pow(2, 16) * 200.0;
+                pcm[i] = val / Math.Pow(2, 16) * 200.0;
             }
 
-            fft = FFT(pcm);
-
-            var fftMaxFrequency = (double)Rate / 2;
-            var fftPointSpacingHz = fftMaxFrequency / graphPointCount;
-
-            Array.Copy(fft, fftReal, fftReal.Length);
+            Array.Copy(FFT(pcm), fftReal, fftReal.Length);
 
             _data = fftReal;
-
-
         }
 
         /// <summary>
@@ -173,41 +213,11 @@ namespace Audio_Visualizer
 
         #endregion
 
-        /// <summary>
-        ///     Update view of data
-        /// </summary>
-        private void Update()
-        {
-            while (_isRun)
-            {
-                PlotAudioData();
-
-                switch (_typeOfView)
-                {
-                    case TypeOfView.None:
-                        break;
-                    case TypeOfView.Wave:
-                        DrawWave();
-                        break;
-                    case TypeOfView.Classic:
-                        DrawSpectrum();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                Thread.Sleep(20);
-            }
-        }
-
-        #endregion
-
         #region Draw
 
         /// <summary>
         ///     Drawing wave
         /// </summary>
-        /// <param name="data">Audio data</param>
         private void DrawWave()
         {
             if (_data == null) return;
@@ -227,41 +237,28 @@ namespace Audio_Visualizer
         {
             if (_data == null) return;
 
-            Dispatcher.Invoke(new Action(() =>
+            Dispatcher.Invoke(() =>
             {
                 Visualizer.Children.Clear();
 
-                for (var i = 0; i < _data.Length; i++)
+                for (var i = 0; i < _data.Length; i+=2)
                 {
                     var canvas = new Canvas
                     {
-                        Width = Visualizer.Width / Convert.ToDouble(_data.Length),
+                        Width = Visualizer.Width / _data.Length * 1.5,
                         Background = Brushes.WhiteSmoke,
                         Height = _data[i] * Visualizer.Height / 32
                     };
 
                     Canvas.SetBottom(canvas, 1);
-                    Canvas.SetLeft(canvas, i * canvas.Width);
+                    Canvas.SetLeft(canvas, i * canvas.Width / 1.5);
 
                     Visualizer.Children.Add(canvas);
                 }
-            }));
+            });
         }
 
         #endregion
-
-        /// <summary>
-        ///     Close event
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            _isRun = false;
-
-            _wasapiLoopbackCapture?.StopRecording();
-            _waveIn?.StopRecording();
-        }
 
         #region Context Menu
 
@@ -318,18 +315,14 @@ namespace Audio_Visualizer
             switch (item.Header.ToString())
             {
                 case "None":
-                    _typeOfInput = TypeOfInput.None;
                     _waveIn?.StopRecording();
                     _wasapiLoopbackCapture?.StopRecording();
                     break;
                 case "Microphone":
-                    _typeOfInput = TypeOfInput.Microphone;
                     _waveIn?.StartRecording();
                     _wasapiLoopbackCapture?.StopRecording();
                     break;
                 case "System":
-                    _typeOfInput = TypeOfInput.System;
-                    _typeOfInput = TypeOfInput.Microphone;
                     _waveIn?.StopRecording();
                     _wasapiLoopbackCapture?.StartRecording();
                     break;
@@ -353,3 +346,11 @@ namespace Audio_Visualizer
         #endregion
     }
 }
+
+/*
+ * TODO: 1. Make animation of audio data in classic view
+ * TODO: 2. Make wave view
+ * TODO: 3. Colors
+ * TODO: 4. App icon
+ * TODO: 5. Advanced choose device options
+ */
