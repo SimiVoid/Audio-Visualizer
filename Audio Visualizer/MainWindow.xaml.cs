@@ -259,7 +259,7 @@ namespace Audio_Visualizer
         }
 
         #endregion
-
+        
         #region Context Menu
 
         /// <summary>
