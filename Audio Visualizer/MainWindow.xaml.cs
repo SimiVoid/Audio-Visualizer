@@ -7,6 +7,7 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using NAudio.Wave;
 using Accord.Math;
+using System.Diagnostics;
 
 namespace Audio_Visualizer
 {
@@ -180,9 +181,9 @@ namespace Audio_Visualizer
 
             for (var i = 0; i < graphPointCount; i++)
             {
-                var val = BitConverter.ToInt16(audioBytes, i * 2);
+                var val = Math.Abs((int)BitConverter.ToInt16(audioBytes, i * 2));
 
-                pcm[i] = val / Math.Pow(2, 16) * 200.0;
+                pcm[i] = 2000f * val / (Math.Log10(Math.Sqrt(val)) * 65536);
             }
 
             Array.Copy(FFT(pcm), fftReal, fftReal.Length);
@@ -241,12 +242,20 @@ namespace Audio_Visualizer
             {
                 Visualizer.Children.Clear();
 
-                for (var i = 0; i < _data.Length; i+=2)
+                for (var i = 0; i < _data.Length; i += 2)
                 {
                     var canvas = new Canvas
                     {
                         Width = Visualizer.Width / _data.Length * 1.5,
-                        Background = Brushes.WhiteSmoke,
+                        Background = Brushes.Azure,
+                        //Background = new SolidColorBrush(
+                        //    new Color
+                        //    {
+                        //        R = (byte)(i % 256),
+                        //        G = (byte)((i + 85) % 256),
+                        //        B = (byte)((i + 170) % 256)
+                        //    }
+                        //),
                         Height = _data[i] * Visualizer.Height / 32
                     };
 
