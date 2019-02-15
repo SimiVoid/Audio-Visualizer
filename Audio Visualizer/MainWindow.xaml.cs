@@ -28,6 +28,7 @@ namespace Audio_Visualizer
         private BufferedWaveProvider _bufferedWaveProvider;
 
         private TypeOfView _typeOfView;
+        private TypeOfInput _typeOfInput;
 
         private double[] _data, _lastData;
         private bool _isRun, _isCreated;
@@ -78,6 +79,7 @@ namespace Audio_Visualizer
             };
 
             _typeOfView = TypeOfView.None;
+            _typeOfInput = TypeOfInput.None;
 
             _updateThread = new Thread(Update);
             _updateThread.TrySetApartmentState(ApartmentState.STA);
@@ -128,30 +130,30 @@ namespace Audio_Visualizer
             {
                 Dispatcher.Invoke(() =>
                 {
-                    var changeRgb = ChangeRgb.rubd;
+                    var changeRgb = ChangeRgb.Rubd;
 
                     uint r = 0, g = 0, b = 255;
 
-                    for (var i = 2; i < _data.Length; i += 2)
+                    for (var i = 0; i < _data.Length; i += 2)
                     {
                         if (r == 255)
-                            changeRgb = ChangeRgb.gurd;
+                            changeRgb = ChangeRgb.Gurd;
                         else if (g == 255)
-                            changeRgb = ChangeRgb.bugd;
+                            changeRgb = ChangeRgb.Bugd;
                         else if (b == 255)
-                            changeRgb = ChangeRgb.rubd;
+                            changeRgb = ChangeRgb.Rubd;
 
                         switch (changeRgb)
                         {
-                            case ChangeRgb.bugd:
+                            case ChangeRgb.Bugd:
                                 b+=3;
                                 g-=3;
                                 break;
-                            case ChangeRgb.gurd:
+                            case ChangeRgb.Gurd:
                                 g+=3;
                                 r-=3;
                                 break;
-                            case ChangeRgb.rubd:
+                            case ChangeRgb.Rubd:
                                 r+=3;
                                 b-=3;
                                 break;
@@ -161,7 +163,7 @@ namespace Audio_Visualizer
 
                         var canvas = new Canvas
                         {
-                            Width = Visualizer.Width / _data.Length * 1.5,
+                            Width = Visualizer.Width / _data.Length,
                             Background = new SolidColorBrush(Color.FromArgb(
                                 Convert.ToByte(127),
                                 Convert.ToByte(r),
@@ -173,7 +175,7 @@ namespace Audio_Visualizer
                         };
 
                         Canvas.SetBottom(canvas, 1);
-                        Canvas.SetLeft(canvas, i * canvas.Width / 1.5);
+                        Canvas.SetLeft(canvas, i * canvas.Width);
 
                         Visualizer.Children.Add(canvas);
                     }
@@ -252,7 +254,10 @@ namespace Audio_Visualizer
 
             for (var i = 0; i < graphPointCount; i++)
             {
-                var val = Math.Abs((int)BitConverter.ToInt16(audioBytes, i * 2));
+                var val = BitConverter.ToInt16(audioBytes, i * 2);
+
+                if (val < 0) val += 10000;
+                else if (val > 0) val -= 10000;
 
                 pcm[i] = 200f * val / 65536;
             }
@@ -313,9 +318,9 @@ namespace Audio_Visualizer
                 for (var i = 0; i < _data.Length; i++)
                 {
                     if (_data[i] < _lastData[i])
-                        _data[i] *= 0.9f;
+                        _data[i] = _lastData[i] * 0.9f;
                     else if (_data[i] > _lastData[i])
-                        _lastData[i] *= 1.1f;
+                        _lastData[i] = _lastData[i] * 1.1f;
                 }
 
             Dispatcher.Invoke(() =>
@@ -324,7 +329,7 @@ namespace Audio_Visualizer
                 {
                     if (obj is Canvas canvas)
                     {
-                        canvas.Height = Math.Sqrt(_data[Convert.ToInt32(canvas.Name.Replace("Canvas", ""))]) * Visualizer.Height / 16;
+                        canvas.Height = _data[Convert.ToInt32(canvas.Name.Replace("Canvas", ""))] * Visualizer.Height / 16;
                     }
                 }
             });
@@ -422,9 +427,9 @@ namespace Audio_Visualizer
 }
 
 /*
- * TODO: 1. Make animation of audio data in classic view
- * TODO: 2. Make wave view
- * TODO: 3. Transparently background in application
- * TODO: 4. App icon
- * TODO: 5. Advanced choose device options
+ * TODO: 1. Make wave view
+ * TODO: 2. Transparently background in application
+ * TODO: 3. App icon
+ * TODO: 4. Advanced choose device options
+ * TODO: 5. Make expressions in use 
  */
