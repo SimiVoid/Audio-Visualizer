@@ -9,8 +9,16 @@
         WindowStyle="None"
         Closed="Window_Closed"
         Title="Audio Visualizer" Height="450" Width="800">
+    <Window.Background>
+        <SolidColorBrush Opacity="0.5" Color="Transparent" />
+    </Window.Background>
+
     <DockPanel>
-        <Canvas x:Name="Visualizer" Background="Gray">
+        <DockPanel.Background>
+            <SolidColorBrush Opacity="0" Color="Transparent" />
+        </DockPanel.Background>
+
+        <Canvas x:Name="Visualizer" Background="#44000000">
             <Canvas.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Mode">

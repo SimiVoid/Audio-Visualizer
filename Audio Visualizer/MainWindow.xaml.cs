@@ -29,8 +29,8 @@ namespace Audio_Visualizer
 
         private TypeOfView _typeOfView;
 
-        private double[] _data;
-        private bool _isRun;
+        private double[] _data, _lastData;
+        private bool _isRun, _isCreated;
 
         private Thread _updateThread;
 
@@ -53,6 +53,7 @@ namespace Audio_Visualizer
         private void Init()
         {
             _isRun = true;
+            _isCreated = false;
 
             Height = SystemParameters.PrimaryScreenHeight * 96.0 / (int)Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
             Width = SystemParameters.PrimaryScreenWidth * 96.0 / (int)Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
@@ -117,6 +118,74 @@ namespace Audio_Visualizer
         }
 
         /// <summary>
+        ///     Create Classic View
+        /// </summary>
+        private void CreateClassicView()
+        {
+            if (_data == null) return;
+
+            var thread = new Thread(()=>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    var changeRgb = ChangeRgb.rubd;
+
+                    uint r = 0, g = 0, b = 255;
+
+                    for (var i = 2; i < _data.Length; i += 2)
+                    {
+                        if (r == 255)
+                            changeRgb = ChangeRgb.gurd;
+                        else if (g == 255)
+                            changeRgb = ChangeRgb.bugd;
+                        else if (b == 255)
+                            changeRgb = ChangeRgb.rubd;
+
+                        switch (changeRgb)
+                        {
+                            case ChangeRgb.bugd:
+                                b+=3;
+                                g-=3;
+                                break;
+                            case ChangeRgb.gurd:
+                                g+=3;
+                                r-=3;
+                                break;
+                            case ChangeRgb.rubd:
+                                r+=3;
+                                b-=3;
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+                        var canvas = new Canvas
+                        {
+                            Width = Visualizer.Width / _data.Length * 1.5,
+                            Background = new SolidColorBrush(Color.FromArgb(
+                                Convert.ToByte(127),
+                                Convert.ToByte(r),
+                                Convert.ToByte(g),
+                                Convert.ToByte(b)
+                            )),
+                            Height = 0,
+                            Name = "Canvas" + i.ToString()
+                        };
+
+                        Canvas.SetBottom(canvas, 1);
+                        Canvas.SetLeft(canvas, i * canvas.Width / 1.5);
+
+                        Visualizer.Children.Add(canvas);
+                    }
+                });
+            });
+            thread.TrySetApartmentState(ApartmentState.STA);
+            thread.Start();
+
+            _isCreated = true;
+        }
+
+        /// <summary>
         ///     Close application event
         /// </summary>
         /// <param name="sender">Window object</param>
@@ -160,6 +229,8 @@ namespace Audio_Visualizer
         private void GetAudio(WaveInEventArgs e)
         {
             _bufferedWaveProvider.AddSamples(e.Buffer, 0, e.BytesRecorded);
+
+            if (_isCreated != true) CreateClassicView();
         }
 
         /// <summary>
@@ -167,7 +238,7 @@ namespace Audio_Visualizer
         /// </summary>
         private void PlotAudioData()
         {
-            var frameSize = BufferSize;
+            const int frameSize = BufferSize;
             var audioBytes = new byte[frameSize];
 
             _bufferedWaveProvider.Read(audioBytes, 0, frameSize);
@@ -183,10 +254,10 @@ namespace Audio_Visualizer
             {
                 var val = Math.Abs((int)BitConverter.ToInt16(audioBytes, i * 2));
 
-                pcm[i] = 2000f * val / (Math.Log10(Math.Sqrt(val)) * 65536);
+                pcm[i] = 200f * val / 65536;
             }
 
-            Array.Copy(FFT(pcm), fftReal, fftReal.Length);
+            Array.Copy(Fft(pcm), fftReal, fftReal.Length);
 
             _data = fftReal;
         }
@@ -196,7 +267,7 @@ namespace Audio_Visualizer
         /// </summary>
         /// <param name="data">Audio pcm data</param>
         /// <returns></returns>
-        private double[] FFT(IReadOnlyList<double> data)
+        private static double[] Fft(IReadOnlyList<double> data)
         {
             var fft = new double[data.Count];
             var fftComplex = new System.Numerics.Complex[data.Count];
@@ -238,33 +309,27 @@ namespace Audio_Visualizer
         {
             if (_data == null) return;
 
+            if(_data != null && _lastData != null)
+                for (var i = 0; i < _data.Length; i++)
+                {
+                    if (_data[i] < _lastData[i])
+                        _data[i] *= 0.9f;
+                    else if (_data[i] > _lastData[i])
+                        _lastData[i] *= 1.1f;
+                }
+
             Dispatcher.Invoke(() =>
             {
-                Visualizer.Children.Clear();
-
-                for (var i = 0; i < _data.Length; i += 2)
+                foreach (var obj in Visualizer.Children)
                 {
-                    var canvas = new Canvas
+                    if (obj is Canvas canvas)
                     {
-                        Width = Visualizer.Width / _data.Length * 1.5,
-                        Background = Brushes.Azure,
-                        //Background = new SolidColorBrush(
-                        //    new Color
-                        //    {
-                        //        R = (byte)(i % 256),
-                        //        G = (byte)((i + 85) % 256),
-                        //        B = (byte)((i + 170) % 256)
-                        //    }
-                        //),
-                        Height = _data[i] * Visualizer.Height / 32
-                    };
-
-                    Canvas.SetBottom(canvas, 1);
-                    Canvas.SetLeft(canvas, i * canvas.Width / 1.5);
-
-                    Visualizer.Children.Add(canvas);
+                        canvas.Height = Math.Sqrt(_data[Convert.ToInt32(canvas.Name.Replace("Canvas", ""))]) * Visualizer.Height / 16;
+                    }
                 }
             });
+
+            _lastData = _data;
         }
 
         #endregion
@@ -359,7 +424,7 @@ namespace Audio_Visualizer
 /*
  * TODO: 1. Make animation of audio data in classic view
  * TODO: 2. Make wave view
- * TODO: 3. Colors
+ * TODO: 3. Transparently background in application
  * TODO: 4. App icon
  * TODO: 5. Advanced choose device options
  */
