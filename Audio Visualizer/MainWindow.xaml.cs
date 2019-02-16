@@ -50,8 +50,10 @@ namespace Audio_Visualizer
             _isRun = true;
             _isCreated = false;
 
-            Height = SystemParameters.PrimaryScreenHeight * 96.0 / (int)Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
-            Width = SystemParameters.PrimaryScreenWidth * 96.0 / (int)Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
+            Height = SystemParameters.PrimaryScreenHeight * 96.0 /
+                     (int) Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
+            Width = SystemParameters.PrimaryScreenWidth * 96.0 /
+                    (int) Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
 
             Visualizer.Height = Height;
             Visualizer.Width = Width;
@@ -128,7 +130,7 @@ namespace Audio_Visualizer
 
             try
             {
-                _typeOfInput = (TypeOfInput) Enum.Parse(typeof(TypeOfInput), Properties.Settings.Default.Input);
+                _typeOfInput = (TypeOfInput) Enum.Parse(typeof(TypeOfInput), Properties.Settings.Default.TypeOfInput);
             }
             catch (Exception)
             {
@@ -140,6 +142,12 @@ namespace Audio_Visualizer
             }
         }
 
+        private static void UpdateSettings(Enum data)
+        {
+            Properties.Settings.Default[data.GetType().ToString().Replace("Audio_Visualizer.", "")] = data.ToString();
+            Properties.Settings.Default.Save();
+        }
+
         /// <summary>
         ///     Create Classic View
         /// </summary>
@@ -147,7 +155,7 @@ namespace Audio_Visualizer
         {
             if (_data == null) return;
 
-            var thread = new Thread(()=>
+            var thread = new Thread(() =>
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -167,16 +175,16 @@ namespace Audio_Visualizer
                         switch (changeRgb)
                         {
                             case ChangeRgb.Bugd:
-                                b+=3;
-                                g-=3;
+                                b += 3;
+                                g -= 3;
                                 break;
                             case ChangeRgb.Gurd:
-                                g+=3;
-                                r-=3;
+                                g += 3;
+                                r -= 3;
                                 break;
                             case ChangeRgb.Rubd:
-                                r+=3;
-                                b-=3;
+                                r += 3;
+                                b -= 3;
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
@@ -277,12 +285,7 @@ namespace Audio_Visualizer
         {
             if (_data == null) return;
 
-            Dispatcher.Invoke(() =>
-            {
-                Visualizer.Children.Clear();
-
-                
-            });          
+            Dispatcher.Invoke(() => { Visualizer.Children.Clear(); });
         }
 
         /// <summary>
@@ -292,31 +295,26 @@ namespace Audio_Visualizer
         {
             if (_data == null) return;
 
-            if(_data != null && _lastData != null)
+            if (_data != null && _lastData != null)
                 for (var i = 0; i < _data.Length; i++)
-                {
                     if (_data[i] < _lastData[i])
                         _data[i] = _lastData[i] * 0.9f;
                     else if (_data[i] > _lastData[i])
                         _lastData[i] = _lastData[i] * 1.1f;
-                }
 
             Dispatcher.Invoke(() =>
             {
                 foreach (var obj in Visualizer.Children)
-                {
                     if (obj is Canvas canvas)
-                    {
-                        canvas.Height = _data[Convert.ToInt32(canvas.Name.Replace("Canvas", ""))] * Visualizer.Height / 16;
-                    }
-                }
+                        canvas.Height = _data[Convert.ToInt32(canvas.Name.Replace("Canvas", ""))] * Visualizer.Height /
+                                        16;
             });
 
             _lastData = _data;
         }
 
         #endregion
-        
+
         #region Context Menu
 
         /// <summary>
@@ -357,8 +355,7 @@ namespace Audio_Visualizer
                     throw new ArgumentOutOfRangeException();
             }
 
-            Properties.Settings.Default.TypeOfView = _typeOfView.ToString();
-            Properties.Settings.Default.Save();
+            UpdateSettings(_typeOfView);
 
             ChangeChecked(item.Header.ToString(), item.Parent);
         }
@@ -393,8 +390,7 @@ namespace Audio_Visualizer
                     throw new ArgumentOutOfRangeException();
             }
 
-            Properties.Settings.Default.Input = _typeOfInput.ToString(); 
-            Properties.Settings.Default.Save();
+            UpdateSettings(_typeOfInput);
 
             ChangeChecked(item.Header.ToString(), item.Parent);
         }

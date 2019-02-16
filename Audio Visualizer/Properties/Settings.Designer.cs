@@ -26,12 +26,12 @@ namespace Audio_Visualizer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("None")]
-        public string Input {
+        public string TypeOfInput {
             get {
-                return ((string)(this["Input"]));
+                return ((string)(this["TypeOfInput"]));
             }
             set {
-                this["Input"] = value;
+                this["TypeOfInput"] = value;
             }
         }
         

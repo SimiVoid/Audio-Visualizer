@@ -17,7 +17,7 @@ namespace Audio_Visualizer
         /// <returns></returns>
         public static double[] PlotAudioData(BufferedWaveProvider bufferedWaveProvider)
         {
-            const int frameSize = BufferSize;
+            var frameSize = BufferSize;
             var audioBytes = new byte[frameSize];
 
             bufferedWaveProvider.Read(audioBytes, 0, frameSize);
