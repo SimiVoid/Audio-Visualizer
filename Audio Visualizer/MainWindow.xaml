@@ -8,6 +8,7 @@
         WindowState="Maximized"
         WindowStyle="None"
         Closed="Window_Closed"
+        Loaded="Window_Loaded"
         Title="Audio Visualizer" Height="450" Width="800">
     <Window.Background>
         <SolidColorBrush Opacity="0.5" Color="Transparent" />
@@ -21,15 +22,15 @@
         <Canvas x:Name="Visualizer" Background="#44000000">
             <Canvas.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Mode">
-                        <MenuItem Header="None" Checked="ModeMenuItem_Checked" IsChecked="True" IsCheckable="True" />
-                        <MenuItem Header="Classic" Checked="ModeMenuItem_Checked" IsChecked="False" IsCheckable="True"/>
-                        <MenuItem Header="Wave" Checked="ModeMenuItem_Checked" IsChecked="False" IsCheckable="True"/>
+                    <MenuItem x:Name="ViewControl" Header="Mode">
+                        <MenuItem Header="None" Checked="ModeMenuItem_Checked" IsCheckable="True" />
+                        <MenuItem Header="Classic" Checked="ModeMenuItem_Checked" IsCheckable="True"/>
+                        <MenuItem Header="Wave" Checked="ModeMenuItem_Checked" IsCheckable="True"/>
                     </MenuItem>
-                    <MenuItem Header="Audio Input">
-                        <MenuItem Header="None" Checked="AudioInputMenuItem_Checked" IsChecked="True" IsCheckable="True" />
-                        <MenuItem Header="System" Checked="AudioInputMenuItem_Checked" IsChecked="False" IsCheckable="True" />
-                        <MenuItem Header="Microphone" Checked="AudioInputMenuItem_Checked" IsChecked="False" IsCheckable="True" />
+                    <MenuItem x:Name="AudioInputControl"  Header="Audio Input">
+                        <MenuItem Header="None" Checked="AudioInputMenuItem_Checked" IsCheckable="True" />
+                        <MenuItem Header="System" Checked="AudioInputMenuItem_Checked" IsCheckable="True" />
+                        <MenuItem Header="Microphone" Checked="AudioInputMenuItem_Checked" IsCheckable="True" />
                     </MenuItem>
                     <Separator/>
                     <MenuItem Header="Exit" Click="Exit_Click" />

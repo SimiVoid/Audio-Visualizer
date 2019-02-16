@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -78,9 +79,6 @@ namespace Audio_Visualizer
                 DiscardOnBufferOverflow = true
             };
 
-            _typeOfView = TypeOfView.None;
-            _typeOfInput = TypeOfInput.None;
-
             _updateThread = new Thread(Update);
             _updateThread.TrySetApartmentState(ApartmentState.STA);
             _updateThread.Start();
@@ -117,6 +115,41 @@ namespace Audio_Visualizer
 
                 Thread.Sleep(20);
             }
+        }
+
+        /// <summary>
+        /// Load application settings
+        /// </summary>
+        private void LoadSettings()
+        {
+            try
+            {
+                _typeOfView = (TypeOfView)Enum.Parse(typeof(TypeOfView), Properties.Settings.Default.TypeOfView);
+            }
+            catch (Exception)
+            {
+                _typeOfView = TypeOfView.None;
+            }
+            finally
+            {
+                Debug.Print(_typeOfView.ToString());
+            }
+
+            try
+            {
+                _typeOfInput = (TypeOfInput)Enum.Parse(typeof(TypeOfInput), Properties.Settings.Default.Input);
+            }
+            catch (Exception)
+            {
+                _typeOfInput = TypeOfInput.None;
+            }
+            finally
+            {
+                Debug.Print(_typeOfInput.ToString());
+            }
+
+            ChangeChecked(_typeOfView.ToString(), ViewControl);
+            ChangeChecked(_typeOfInput.ToString(), AudioInputControl);
         }
 
         /// <summary>
@@ -198,6 +231,16 @@ namespace Audio_Visualizer
 
             _wasapiLoopbackCapture?.StopRecording();
             _waveIn?.StopRecording();
+        }
+
+        /// <summary>
+        /// Function doing after loading interface and modules of application
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoadSettings();
         }
 
         #endregion
@@ -351,8 +394,8 @@ namespace Audio_Visualizer
             if (!(parent is MenuItem menuItem)) return;
 
             foreach (var obj in menuItem.Items)
-                if (obj is MenuItem item && item.Header.ToString() != text)
-                    item.IsChecked = false;
+                if (obj is MenuItem item)
+                    item.IsChecked = item.Header.ToString() == text;
         }
 
         /// <summary>
@@ -379,6 +422,10 @@ namespace Audio_Visualizer
                     throw new ArgumentOutOfRangeException();
             }
 
+            Properties.Settings.Default["TypeOfView"] = _typeOfView.ToString();
+            Properties.Settings.Default.Upgrade();
+            Properties.Settings.Default.Save();
+
             ChangeChecked(item.Header.ToString(), item.Parent);
         }
 
@@ -396,18 +443,25 @@ namespace Audio_Visualizer
                 case "None":
                     _waveIn?.StopRecording();
                     _wasapiLoopbackCapture?.StopRecording();
+                    _typeOfInput = TypeOfInput.None;
                     break;
                 case "Microphone":
                     _waveIn?.StartRecording();
                     _wasapiLoopbackCapture?.StopRecording();
+                    _typeOfInput = TypeOfInput.Microphone;
                     break;
                 case "System":
                     _waveIn?.StopRecording();
                     _wasapiLoopbackCapture?.StartRecording();
+                    _typeOfInput = TypeOfInput.System;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            Properties.Settings.Default["Input"] = _typeOfInput.ToString();
+            Properties.Settings.Default.Upgrade();
+            Properties.Settings.Default.Save();
 
             ChangeChecked(item.Header.ToString(), item.Parent);
         }

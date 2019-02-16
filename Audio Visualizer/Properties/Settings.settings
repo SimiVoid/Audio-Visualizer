@@ -1,7 +1,12 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="uri:settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Audio_Visualizer" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Input" Type="System.String" Scope="User">
+      <Value Profile="(Default)">None</Value>
+    </Setting>
+    <Setting Name="TypeOfView" Type="System.String" Scope="User">
+      <Value Profile="(Default)">None</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>
