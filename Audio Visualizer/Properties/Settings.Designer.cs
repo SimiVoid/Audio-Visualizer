@@ -34,17 +34,5 @@ namespace Audio_Visualizer.Properties {
                 this["TypeOfInput"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("None")]
-        public string TypeOfView {
-            get {
-                return ((string)(this["TypeOfView"]));
-            }
-            set {
-                this["TypeOfView"] = value;
-            }
-        }
     }
 }

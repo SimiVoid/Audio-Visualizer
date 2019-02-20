@@ -9,6 +9,7 @@
         WindowStyle="None"
         Closed="Window_Closed"
         Loaded="Window_Loaded"
+        Icon="Resources/Audio Visualizer Icon.ico"
         Title="Audio Visualizer" Height="450" Width="800">
     <Window.Background>
         <SolidColorBrush Opacity="0.5" Color="Transparent" />
@@ -22,11 +23,6 @@
         <Canvas x:Name="Visualizer" Background="#44000000">
             <Canvas.ContextMenu>
                 <ContextMenu>
-                    <MenuItem x:Name="ViewControl" Header="Mode">
-                        <MenuItem Header="None" Checked="ModeMenuItem_Checked" IsCheckable="True" />
-                        <MenuItem Header="Classic" Checked="ModeMenuItem_Checked" IsCheckable="True"/>
-                        <MenuItem Header="Wave" Checked="ModeMenuItem_Checked" IsCheckable="True"/>
-                    </MenuItem>
                     <MenuItem x:Name="AudioInputControl"  Header="Audio Input">
                         <MenuItem Header="None" Checked="AudioInputMenuItem_Checked" IsCheckable="True" />
                         <MenuItem Header="System" Checked="AudioInputMenuItem_Checked" IsCheckable="True" />

@@ -21,7 +21,6 @@ namespace Audio_Visualizer
         private WasapiLoopbackCapture _wasapiLoopbackCapture;
         private BufferedWaveProvider _bufferedWaveProvider;
 
-        private TypeOfView _typeOfView;
         private TypeOfInput _typeOfInput;
 
         private double[] _data, _lastData;
@@ -86,27 +85,15 @@ namespace Audio_Visualizer
         {
             while (_isRun)
             {
-                _data = Audio.PlotAudioData(_bufferedWaveProvider);
-
-                switch (_typeOfView)
-                {
-                    case TypeOfView.None:
-                        break;
-                    case TypeOfView.Wave:
-                        DrawWave();
-                        break;
-                    case TypeOfView.Classic:
-                        DrawSpectrum();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                if (_data != null)
+                if(_typeOfInput != TypeOfInput.None)
+                    _data = Audio.PlotAudioData(_bufferedWaveProvider);
+                else if (_data != null)
                     for (var i = 0; i < _data.Length; i++)
                         _data[i] *= 0.9;
 
-                Thread.Sleep(20);
+                DrawSpectrum();
+
+                Thread.Sleep(10);
             }
         }
 
@@ -115,19 +102,6 @@ namespace Audio_Visualizer
         /// </summary>
         private void LoadSettings()
         {
-            try
-            {
-                _typeOfView = (TypeOfView) Enum.Parse(typeof(TypeOfView), Properties.Settings.Default.TypeOfView);
-            }
-            catch (Exception)
-            {
-                _typeOfView = TypeOfView.None;
-            }
-            finally
-            {
-                ChangeChecked(_typeOfView.ToString(), ViewControl);
-            }
-
             try
             {
                 _typeOfInput = (TypeOfInput) Enum.Parse(typeof(TypeOfInput), Properties.Settings.Default.TypeOfInput);
@@ -142,6 +116,10 @@ namespace Audio_Visualizer
             }
         }
 
+        /// <summary>
+        /// Update settings file
+        /// </summary>
+        /// <param name="data"></param>
         private static void UpdateSettings(Enum data)
         {
             Properties.Settings.Default[data.GetType().ToString().Replace("Audio_Visualizer.", "")] = data.ToString();
@@ -279,16 +257,6 @@ namespace Audio_Visualizer
         #region Draw
 
         /// <summary>
-        ///     Drawing wave
-        /// </summary>
-        private void DrawWave()
-        {
-            if (_data == null) return;
-
-            Dispatcher.Invoke(() => { Visualizer.Children.Clear(); });
-        }
-
-        /// <summary>
         /// Draw spectrum of audio
         /// </summary>
         private void DrawSpectrum()
@@ -328,36 +296,7 @@ namespace Audio_Visualizer
 
             foreach (var obj in menuItem.Items)
                 if (obj is MenuItem item)
-                    item.IsChecked = item.Header.ToString() == text;
-        }
-
-        /// <summary>
-        ///     Change options of data visualize
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ModeMenuItem_Checked(object sender, RoutedEventArgs e)
-        {
-            if (!(sender is MenuItem item)) return;
-
-            switch (item.Header.ToString())
-            {
-                case "None":
-                    _typeOfView = TypeOfView.None;
-                    break;
-                case "Classic":
-                    _typeOfView = TypeOfView.Classic;
-                    break;
-                case "Wave":
-                    _typeOfView = TypeOfView.Wave;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            UpdateSettings(_typeOfView);
-
-            ChangeChecked(item.Header.ToString(), item.Parent);
+                    item.IsChecked = (item.Header.ToString() == text);
         }
 
         /// <summary>
@@ -377,9 +316,17 @@ namespace Audio_Visualizer
                     _typeOfInput = TypeOfInput.None;
                     break;
                 case "Microphone":
-                    _waveIn?.StartRecording();
-                    _wasapiLoopbackCapture?.StopRecording();
                     _typeOfInput = TypeOfInput.Microphone;
+                    try
+                    {
+                        _waveIn?.StartRecording();
+                        _wasapiLoopbackCapture?.StopRecording();
+                    }
+                    catch (Exception exp)
+                    {
+                        MessageBox.Show($"Cannot start capture audio from input device.\n{exp.Message}", "Error",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                     break;
                 case "System":
                     _waveIn?.StopRecording();
@@ -410,9 +357,6 @@ namespace Audio_Visualizer
 }
 
 /*
- * TODO: 1. Make wave view
- * TODO: 2. Transparently background in application
- * TODO: 3. App icon
- * TODO: 4. Advanced choose device options
- * TODO: 5. Make expressions in use 
+ * TODO: 1. Transparently background in application
+ * TODO: 2. Advanced choose device options
  */

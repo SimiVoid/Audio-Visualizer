@@ -5,8 +5,5 @@
     <Setting Name="TypeOfInput" Type="System.String" Scope="User">
       <Value Profile="(Default)">None</Value>
     </Setting>
-    <Setting Name="TypeOfView" Type="System.String" Scope="User">
-      <Value Profile="(Default)">None</Value>
-    </Setting>
   </Settings>
 </SettingsFile>
