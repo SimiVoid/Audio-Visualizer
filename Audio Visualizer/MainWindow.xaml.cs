@@ -141,7 +141,7 @@ namespace Audio_Visualizer
 
                     uint r = 0, g = 0, b = 255;
 
-                    for (var i = 0; i < _data.Length; i += 2)
+                    for (var i = 0; i < _data.Length / 2; i++)
                     {
                         if (r == 255)
                             changeRgb = ChangeRgb.Gurd;
@@ -182,7 +182,7 @@ namespace Audio_Visualizer
                         };
 
                         Canvas.SetBottom(canvas, 1);
-                        Canvas.SetLeft(canvas, i * canvas.Width);
+                        Canvas.SetLeft(canvas, i * canvas.Width * 2);
 
                         Visualizer.Children.Add(canvas);
                     }
@@ -274,8 +274,7 @@ namespace Audio_Visualizer
             {
                 foreach (var obj in Visualizer.Children)
                     if (obj is Canvas canvas)
-                        canvas.Height = _data[Convert.ToInt32(canvas.Name.Replace("Canvas", ""))] * Visualizer.Height /
-                                        16;
+                        canvas.Height = _data[Convert.ToInt32(canvas.Name.Replace("Canvas", ""))] * Visualizer.Height / 16;
             });
 
             _lastData = _data;
