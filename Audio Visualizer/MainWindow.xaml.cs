@@ -50,7 +50,6 @@ namespace Audio_Visualizer
         private void Init()
         {
             _isRun = true;
-            _isCreated = false;
 
             Height = SystemParameters.PrimaryScreenHeight * 96.0 /
                      (int) Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", 96);
@@ -106,6 +105,8 @@ namespace Audio_Visualizer
         private void CreateClassicView()
         {
             if (_data == null) return;
+
+            _isCreated = false;
 
             var thread = new Thread(() =>
             {
