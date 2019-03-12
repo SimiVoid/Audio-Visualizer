@@ -22,6 +22,7 @@ namespace Audio_Visualizer
         private BufferedWaveProvider _bufferedWaveProvider;
 
         private TypeOfInput _typeOfInput;
+        private System.Drawing.Color _backgroundColor;
 
         private double[] _data, _lastData;
         private bool _isRun, _isCreated;
@@ -114,15 +115,34 @@ namespace Audio_Visualizer
             {
                 ChangeChecked(_typeOfInput.ToString(), AudioInputControl);
             }
+
+            try
+            {
+                _backgroundColor = Properties.Settings.Default.Color;
+            }
+            catch (Exception)
+            {
+                _backgroundColor = System.Drawing.Color.FromArgb(255, 0, 0, 0);
+            }
+            finally
+            {
+                ChangeChecked($"{Convert.ToInt32(_backgroundColor.A / 255 * 100)}%", TransparentlyControl);
+            }
         }
 
         /// <summary>
-        /// Update settings file
+        ///     Update settings file
         /// </summary>
         /// <param name="data"></param>
         private static void UpdateSettings(Enum data)
         {
             Properties.Settings.Default[data.GetType().ToString().Replace("Audio_Visualizer.", "")] = data.ToString();
+            Properties.Settings.Default.Save();
+        }
+
+        private static void UpdateSettings(System.Drawing.Color data)
+        {
+            Properties.Settings.Default[data.GetType().ToString().Replace("System.Drawing.", "")] = data;
             Properties.Settings.Default.Save();
         }
 
@@ -337,6 +357,49 @@ namespace Audio_Visualizer
             }
 
             UpdateSettings(_typeOfInput);
+
+            ChangeChecked(item.Header.ToString(), item.Parent);
+        }
+
+        /// <summary>
+        ///     Change opacity of background
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TransparentlyControl_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is MenuItem item)) return;
+
+            switch (item.Header.ToString())
+            {
+                case "0%":
+                    _backgroundColor = System.Drawing.Color.FromArgb(1, 0, 0, 0);
+                    break;
+                case "25%":
+                    _backgroundColor = System.Drawing.Color.FromArgb(63, 0, 0, 0);
+                    break;
+                case "50%":
+                    _backgroundColor = System.Drawing.Color.FromArgb(127, 0, 0, 0);
+                    break;
+                case "75%":
+                    _backgroundColor = System.Drawing.Color.FromArgb(191, 0, 0, 0);
+                    break;  
+                case "100%":
+                    _backgroundColor = System.Drawing.Color.FromArgb(255, 0, 0, 0); ;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            Dispatcher.Invoke(() => { Visualizer.Background = new SolidColorBrush(new Color
+            {
+                A = _backgroundColor.A,
+                R = _backgroundColor.R,
+                G = _backgroundColor.G,
+                B = _backgroundColor.B
+            }); });
+
+            UpdateSettings(_backgroundColor);
 
             ChangeChecked(item.Header.ToString(), item.Parent);
         }

@@ -34,5 +34,16 @@ namespace Audio_Visualizer.Properties {
                 this["TypeOfInput"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Color Color {
+            get {
+                return ((global::System.Drawing.Color)(this["Color"]));
+            }
+            set {
+                this["Color"] = value;
+            }
+        }
     }
 }
