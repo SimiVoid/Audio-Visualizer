@@ -430,6 +430,5 @@ namespace Audio_Visualizer
 }
 
 /*
- * TODO: 1. Transparently background in application
- * TODO: 2. Advanced choose device options
+ * TODO: 1. Advanced choose device options
  */
