@@ -432,4 +432,5 @@ namespace Audio_Visualizer
 
 /*
  * TODO: 1. Advanced choose device options
+ * TODO: 2. Spectrum opacity
  */
