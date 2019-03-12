@@ -6,7 +6,7 @@
       <Value Profile="(Default)">None</Value>
     </Setting>
     <Setting Name="Color" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">Black</Value>
     </Setting>
   </Settings>
 </SettingsFile>
