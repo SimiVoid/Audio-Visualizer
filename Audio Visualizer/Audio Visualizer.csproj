@@ -96,7 +96,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Audio.cs" />
-    <Compile Include="ChangeRgb.cs" />
+    <Compile Include="ChangeRgbState.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>

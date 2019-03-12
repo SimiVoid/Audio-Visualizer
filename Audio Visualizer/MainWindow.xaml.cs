@@ -111,30 +111,30 @@ namespace Audio_Visualizer
             {
                 Dispatcher.Invoke(() =>
                 {
-                    var changeRgb = ChangeRgb.Rubd;
+                    var changeRgb = ChangeRgbState.Rubd;
 
                     uint r = 0, g = 0, b = 255;
 
                     for (var i = 0; i < _data.Length / 2; i++)
                     {
                         if (r == 255)
-                            changeRgb = ChangeRgb.Gurd;
+                            changeRgb = ChangeRgbState.Gurd;
                         else if (g == 255)
-                            changeRgb = ChangeRgb.Bugd;
+                            changeRgb = ChangeRgbState.Bugd;
                         else if (b == 255)
-                            changeRgb = ChangeRgb.Rubd;
+                            changeRgb = ChangeRgbState.Rubd;
 
                         switch (changeRgb)
                         {
-                            case ChangeRgb.Bugd:
+                            case ChangeRgbState.Bugd:
                                 b += 3;
                                 g -= 3;
                                 break;
-                            case ChangeRgb.Gurd:
+                            case ChangeRgbState.Gurd:
                                 g += 3;
                                 r -= 3;
                                 break;
-                            case ChangeRgb.Rubd:
+                            case ChangeRgbState.Rubd:
                                 r += 3;
                                 b -= 3;
                                 break;

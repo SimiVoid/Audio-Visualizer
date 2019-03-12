@@ -1,6 +1,6 @@
 ﻿namespace Audio_Visualizer
 {
-    internal enum ChangeRgb
+    internal enum ChangeRgbState
     {
         Rubd,
         Gurd,
