@@ -3,8 +3,10 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Audio_Visualizer.Properties;
 using Microsoft.Win32;
 using NAudio.Wave;
+using Color = System.Drawing.Color;
 
 namespace Audio_Visualizer
 {
@@ -22,7 +24,7 @@ namespace Audio_Visualizer
         private BufferedWaveProvider _bufferedWaveProvider;
 
         private TypeOfInput _typeOfInput;
-        private System.Drawing.Color _backgroundColor;
+        private Color _backgroundColor;
 
         private double[] _data, _lastData;
         private bool _isRun, _isCreated;
@@ -86,7 +88,7 @@ namespace Audio_Visualizer
         {
             while (_isRun)
             {
-                if(_typeOfInput != TypeOfInput.None)
+                if (_typeOfInput != TypeOfInput.None)
                     _data = Audio.PlotAudioData(_bufferedWaveProvider);
                 else if (_data != null)
                     for (var i = 0; i < _data.Length; i++)
@@ -96,54 +98,6 @@ namespace Audio_Visualizer
 
                 Thread.Sleep(10);
             }
-        }
-
-        /// <summary>
-        /// Load application settings
-        /// </summary>
-        private void LoadSettings()
-        {
-            try
-            {
-                _typeOfInput = (TypeOfInput) Enum.Parse(typeof(TypeOfInput), Properties.Settings.Default.TypeOfInput);
-            }
-            catch (Exception)
-            {
-                _typeOfInput = TypeOfInput.None;
-            }
-            finally
-            {
-                ChangeChecked(_typeOfInput.ToString(), AudioInputControl);
-            }
-
-            try
-            {
-                _backgroundColor = Properties.Settings.Default.Color;
-            }
-            catch (Exception)
-            {
-                _backgroundColor = System.Drawing.Color.FromArgb(255, 0, 0, 0);
-            }
-            finally
-            {
-                ChangeChecked($"{Convert.ToInt32(_backgroundColor.A / 255 * 100)}%", TransparentlyControl);
-            }
-        }
-
-        /// <summary>
-        ///     Update settings file
-        /// </summary>
-        /// <param name="data"></param>
-        private static void UpdateSettings(Enum data)
-        {
-            Properties.Settings.Default[data.GetType().ToString().Replace("Audio_Visualizer.", "")] = data.ToString();
-            Properties.Settings.Default.Save();
-        }
-
-        private static void UpdateSettings(System.Drawing.Color data)
-        {
-            Properties.Settings.Default[data.GetType().ToString().Replace("System.Drawing.", "")] = data;
-            Properties.Settings.Default.Save();
         }
 
         /// <summary>
@@ -191,14 +145,14 @@ namespace Audio_Visualizer
                         var canvas = new Canvas
                         {
                             Width = Visualizer.Width / _data.Length,
-                            Background = new SolidColorBrush(Color.FromArgb(
+                            Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(
                                 Convert.ToByte(127),
                                 Convert.ToByte(r),
                                 Convert.ToByte(g),
                                 Convert.ToByte(b)
                             )),
                             Height = 0,
-                            Name = "Canvas" + i.ToString()
+                            Name = "Canvas" + i
                         };
 
                         Canvas.SetBottom(canvas, 1);
@@ -228,7 +182,7 @@ namespace Audio_Visualizer
         }
 
         /// <summary>
-        /// Function doing after loading interface and modules of application
+        ///     Function doing after loading interface and modules of application
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -237,12 +191,64 @@ namespace Audio_Visualizer
             LoadSettings();
         }
 
+        #region Settings
+
+        /// <summary>
+        ///     Load application settings
+        /// </summary>
+        private void LoadSettings()
+        {
+            try
+            {
+                _typeOfInput = (TypeOfInput)Enum.Parse(typeof(TypeOfInput), Settings.Default.TypeOfInput);
+            }
+            catch (Exception)
+            {
+                _typeOfInput = TypeOfInput.None;
+            }
+            finally
+            {
+                ChangeChecked(_typeOfInput.ToString(), AudioInputControl);
+            }
+
+            try
+            {
+                _backgroundColor = Settings.Default.Color;
+            }
+            catch (Exception)
+            {
+                _backgroundColor = Color.FromArgb(255, 0, 0, 0);
+            }
+            finally
+            {
+                ChangeChecked($"{Convert.ToInt32(_backgroundColor.A / 255 * 100)}%", TransparentlyControl);
+            }
+        }
+
+        /// <summary>
+        ///     Update settings file
+        /// </summary>
+        /// <param name="data"></param>
+        private static void UpdateSettings(Enum data)
+        {
+            Settings.Default[data.GetType().ToString().Replace("Audio_Visualizer.", "")] = data.ToString();
+            Settings.Default.Save();
+        }
+
+        private static void UpdateSettings(Color data)
+        {
+            Settings.Default[data.GetType().ToString().Replace("System.Drawing.", "")] = data;
+            Settings.Default.Save();
+        }
+
+        #endregion
+
         #endregion
 
         #region Audio
 
         /// <summary>
-        /// Get audio from default audio stream;
+        ///     Get audio from default audio stream;
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -262,7 +268,7 @@ namespace Audio_Visualizer
         }
 
         /// <summary>
-        /// Get audio from stream
+        ///     Get audio from stream
         /// </summary>
         /// <param name="e">Audio stream data</param>
         private void GetAudio(WaveInEventArgs e)
@@ -277,7 +283,7 @@ namespace Audio_Visualizer
         #region Draw
 
         /// <summary>
-        /// Draw spectrum of audio
+        ///     Draw spectrum of audio
         /// </summary>
         private void DrawSpectrum()
         {
@@ -315,7 +321,7 @@ namespace Audio_Visualizer
 
             foreach (var obj in menuItem.Items)
                 if (obj is MenuItem item)
-                    item.IsChecked = (item.Header.ToString() == text);
+                    item.IsChecked = item.Header.ToString() == text;
         }
 
         /// <summary>
@@ -346,6 +352,7 @@ namespace Audio_Visualizer
                         MessageBox.Show($"Cannot start capture audio from input device.\n{exp.Message}", "Error",
                             MessageBoxButton.OK, MessageBoxImage.Error);
                     }
+
                     break;
                 case "System":
                     _waveIn?.StopRecording();
@@ -373,31 +380,35 @@ namespace Audio_Visualizer
             switch (item.Header.ToString())
             {
                 case "0%":
-                    _backgroundColor = System.Drawing.Color.FromArgb(1, 0, 0, 0);
+                    _backgroundColor = Color.FromArgb(1, 0, 0, 0);
                     break;
                 case "25%":
-                    _backgroundColor = System.Drawing.Color.FromArgb(63, 0, 0, 0);
+                    _backgroundColor = Color.FromArgb(63, 0, 0, 0);
                     break;
                 case "50%":
-                    _backgroundColor = System.Drawing.Color.FromArgb(127, 0, 0, 0);
+                    _backgroundColor = Color.FromArgb(127, 0, 0, 0);
                     break;
                 case "75%":
-                    _backgroundColor = System.Drawing.Color.FromArgb(191, 0, 0, 0);
-                    break;  
+                    _backgroundColor = Color.FromArgb(191, 0, 0, 0);
+                    break;
                 case "100%":
-                    _backgroundColor = System.Drawing.Color.FromArgb(255, 0, 0, 0); ;
+                    _backgroundColor = Color.FromArgb(255, 0, 0, 0);
+                    ;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            Dispatcher.Invoke(() => { Visualizer.Background = new SolidColorBrush(new Color
+            Dispatcher.Invoke(() =>
             {
-                A = _backgroundColor.A,
-                R = _backgroundColor.R,
-                G = _backgroundColor.G,
-                B = _backgroundColor.B
-            }); });
+                Visualizer.Background = new SolidColorBrush(new System.Windows.Media.Color
+                {
+                    A = _backgroundColor.A,
+                    R = _backgroundColor.R,
+                    G = _backgroundColor.G,
+                    B = _backgroundColor.B
+                });
+            });
 
             UpdateSettings(_backgroundColor);
 
