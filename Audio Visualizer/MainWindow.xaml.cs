@@ -35,7 +35,7 @@ namespace Audio_Visualizer
 
         #endregion
 
-        #region Main elements of app
+        #region Main elements of app    
 
         /// <inheritdoc />
         /// <summary>
