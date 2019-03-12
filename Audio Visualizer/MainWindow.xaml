@@ -17,7 +17,7 @@
     </Window.Background>
 
     <DockPanel>
-        <Canvas x:Name="Visualizer" Background="#FF000000">
+        <Canvas x:Name="Visualizer">
             <Canvas.ContextMenu>
                 <ContextMenu>
                     <MenuItem x:Name="AudioInputControl"  Header="Audio Input">
