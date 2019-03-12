@@ -19,6 +19,8 @@ namespace Audio_Visualizer
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Private variables
+
         private WaveIn _waveIn;
         private WasapiLoopbackCapture _wasapiLoopbackCapture;
         private BufferedWaveProvider _bufferedWaveProvider;
@@ -30,6 +32,8 @@ namespace Audio_Visualizer
         private bool _isRun, _isCreated;
 
         private Thread _updateThread;
+
+        #endregion
 
         #region Main elements of app
 
