@@ -398,7 +398,6 @@ namespace Audio_Visualizer
                     break;
                 case "100%":
                     _backgroundColor = Color.FromArgb(255, 0, 0, 0);
-                    ;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -436,4 +435,5 @@ namespace Audio_Visualizer
 
 /*
  * TODO: 1. Advanced choose device options
+ * TODO: 2. Play music as ...
  */

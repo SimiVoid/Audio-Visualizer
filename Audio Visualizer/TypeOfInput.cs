@@ -1,6 +1,6 @@
 ﻿namespace Audio_Visualizer
 {
-    internal enum TypeOfInput
+    public enum TypeOfInput
     {
         None,
         Microphone,
