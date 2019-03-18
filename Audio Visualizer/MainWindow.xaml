@@ -25,7 +25,7 @@
                         <MenuItem Header="System" Checked="AudioInputMenuItem_Checked" IsCheckable="True" />
                         <MenuItem Header="Microphone" Checked="AudioInputMenuItem_Checked" IsCheckable="True" />
                     </MenuItem>
-                    <MenuItem x:Name="TransparentlyControl"  Header="Background opacity">
+                    <MenuItem x:Name="TransparentlyControl" Header="Background opacity">
                         <MenuItem Header="0%" Checked="TransparentlyControl_Checked" IsCheckable="True" />
                         <MenuItem Header="25%" Checked="TransparentlyControl_Checked" IsCheckable="True" />
                         <MenuItem Header="50%" Checked="TransparentlyControl_Checked" IsCheckable="True" />
